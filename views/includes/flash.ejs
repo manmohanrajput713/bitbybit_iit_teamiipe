@@ -1,0 +1,15 @@
+
+
+<%  if(error && error.length){  %>
+    <div class="alert">
+        <%= error %> 
+        <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+    </div>
+    <%  }  %>
+    
+    <%  if(sucess && sucess.length){  %>
+        <div class="alert-sucess">
+            <%= sucess %> 
+            <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+        </div>
+        <%  }  %>
