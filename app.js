@@ -65,6 +65,17 @@ app.get("/", (req, res) => {
     res.render("listings/index.ejs")
 })
 
+app.get("/payment", (req, res) => {
+
+    res.render("listings/payment.ejs")
+})
+
+app.get("/admin", (req, res) => {
+
+    res.render("listings/admin.ejs")
+})
+
+
 app.post("/signup", wrapAsync(async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
