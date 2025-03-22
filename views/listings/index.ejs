@@ -6,8 +6,14 @@
     <nav class="navbar">
         <div class="logo">GreenApp</div>
         <div class="auth-buttons">
-            <button class="btn btn-login" onclick="openModal('login')">Login</button>
-            <button class="btn btn-signup" onclick="openModal('signup')">Sign Up</button>
+            <% if (currUser) { %>
+                <form action="/logout" method="post">
+                    <button class="btn btn-logout" type="submit">Logout</button>
+                </form>
+            <% } else { %>
+                <button class="btn btn-login" onclick="openModal('login')">Login</button>
+                <button class="btn btn-signup" onclick="openModal('signup')">Sign Up</button>
+            <% } %>
         </div>
     </nav>
 
@@ -49,19 +55,19 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
+    
     <div class="modal" id="login-modal">
         <div class="modal-content">
             <div class="modal-close" onclick="closeModal('login')">&times;</div>
             <h2 class="modal-title">Login</h2>
-            <form id="login-form">
+            <form id="login-form" action="/login" method="post">
                 <div class="form-group">
-                    <label class="form-label" for="login-email">Email</label>
-                    <input class="form-input" type="email" id="login-email" placeholder="Enter your email" required>
+                    <label class="form-label" for="login-email">Username</label>
+                    <input class="form-input" name="username" id="login-email" placeholder="Enter your username" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="login-password">Password</label>
-                    <input class="form-input" type="password" id="login-password" placeholder="Enter your password" required>
+                    <input class="form-input" name="password" type="password" id="login-password" placeholder="Enter your password" required>
                 </div>
                 <button class="form-submit" type="submit">Login</button>
             </form>
@@ -90,6 +96,7 @@
             </form>
         </div>
     </div>
+  
 </body>
 
 
@@ -303,12 +310,12 @@ function renderEmployees() {
     });
 
     // Handle login form submission
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        isLoggedIn = true;
-        closeModal('login');
-        renderEmployees();
-    });
+    // document.getElementById('login-form').addEventListener('submit', function(e) {
+    //     e.preventDefault();
+    //     isLoggedIn = true;
+    //     closeModal('login');
+    //     renderEmployees();
+    // });
 
     // Handle signup form submission
     // document.getElementById('signup-form').addEventListener('submit', function(e) {
