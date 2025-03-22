@@ -1,7 +1,6 @@
 
 <% layout("/layouts/boilerPlate") %>
 
-
 <body>
     <nav class="navbar">
         <div class="logo">GreenApp</div>
@@ -92,246 +91,249 @@
     </div>
 </body>
 
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // Sample employee data
-    const employees = [
-        {
-            id: 1,
-            name: "John Smith",
-            position: "Senior Software Engineer",
-            department: "Engineering",
-            salary: 115000,
-            email: "john.smith@company.com",
-            phone: "(555) 123-4567",
-            location: "San Francisco, CA",
-            startDate: "Mar 15, 2019"
-        },
-        {
-            id: 2,
-            name: "Emily Johnson",
-            position: "UI/UX Designer",
-            department: "Design",
-            salary: 95000,
-            email: "emily.johnson@company.com",
-            phone: "(555) 234-5678",
-            location: "New York, NY",
-            startDate: "Jun 10, 2020"
-        },
-        {
-            id: 3,
-            name: "Michael Williams",
-            position: "Marketing Manager",
-            department: "Marketing",
-            salary: 105000,
-            email: "michael.williams@company.com",
-            phone: "(555) 345-6789",
-            location: "Chicago, IL",
-            startDate: "Jan 22, 2018"
-        },
-        {
-            id: 4,
-            name: "Jessica Brown",
-            position: "Product Manager",
-            department: "Product",
-            salary: 120000,
-            email: "jessica.brown@company.com",
-            phone: "(555) 456-7890",
-            location: "Seattle, WA",
-            startDate: "Nov 5, 2017"
-        },
-        {
-            id: 5,
-            name: "David Miller",
-            position: "Data Scientist",
-            department: "Engineering",
-            salary: 125000,
-            email: "david.miller@company.com",
-            phone: "(555) 567-8901",
-            location: "Austin, TX",
-            startDate: "Jul 30, 2019"
-        },
-        {
-            id: 6,
-            name: "Sarah Wilson",
-            position: "Sales Representative",
-            department: "Sales",
-            salary: 85000,
-            email: "sarah.wilson@company.com",
-            phone: "(555) 678-9012",
-            location: "Denver, CO",
-            startDate: "Feb 18, 2021"
-        },
-        {
-            id: 7,
-            name: "Robert Taylor",
-            position: "Frontend Developer",
-            department: "Engineering",
-            salary: 98000,
-            email: "robert.taylor@company.com",
-            phone: "(555) 789-0123",
-            location: "Portland, OR",
-            startDate: "Sep 3, 2020"
-        },
-        {
-            id: 8,
-            name: "Amanda Martinez",
-            position: "Content Strategist",
-            department: "Marketing",
-            salary: 90000,
-            email: "amanda.martinez@company.com",
-            phone: "(555) 890-1234",
-            location: "Miami, FL",
-            startDate: "Apr 11, 2019"
-        }
-    ];
 
-    let isLoggedIn = false;
-    let currentFilter = 'All';
-    let searchTerm = '';
+// Initialize Supabase
+const supabase = supabaseClient.createClient(
+    'https://qslmebxskpmflhqeokhb.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzbG1lYnhza3BtZmxocWVva2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1NTUxNjUsImV4cCI6MjA1ODEzMTE2NX0.DqoQcy7u_ZFPOjmIDpdnFFIjlu-2KSFxFqyeMq3T5PE'
+);
 
-    // Function to format salary
-    function formatSalary(salary) {
-        return '$' + salary.toLocaleString();
+let employees = [];
+let searchTerm = '';
+let currentFilter = 'All';
+let isLoggedIn = false;
+
+// Function to fetch employees from Supabase
+async function fetchEmployees() {
+    try {
+        const { data, error } = await supabase
+            .from('jobs')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        if (data && data.length > 0) return data;
+        
+        console.warn("No data from Supabase, using sample data");
+        // Return your sample data as fallback
+        return [
+            {
+                id: 1,
+                name: "John Smith",
+                position: "Senior Software Engineer",
+                department: "Engineering",
+                salary: 115000,
+                email: "john.smith@company.com",
+                phone: "(555) 123-4567",
+                location: "San Francisco, CA",
+                startDate: "Mar 15, 2019"
+            },
+            // Add other sample employees...
+        ];
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        // Return sample data as fallback
+        return [
+            {
+                id: 1,
+                name: "John Smith",
+                position: "Senior Software Engineer",
+                department: "Engineering",
+                salary: 115000,
+                email: "john.smith@company.com",
+                phone: "(555) 123-4567",
+                location: "San Francisco, CA",
+                startDate: "Mar 15, 2019"
+            },
+            // Add other sample employees...
+        ];
     }
+}
 
-    // Function to get initials from name
-    function getInitials(name) {
-        return name.split(' ').map(n => n[0]).join('');
-    }
+// Function to format salary
+function formatSalary(salary) {
+    return '$' + salary.toLocaleString();
+}
 
-    
+// Function to get initials from name
+function getInitials(name) {
+    return name.split(' ').map(n => n[0]).join('');
+}
 
+// Filter function to work with Supabase data
+function filterEmployees() {
+    return employees.filter(employee => {
+        const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            employee.email.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesFilter = currentFilter === 'All' || 
+            employee.department === currentFilter;
+        
+        return matchesSearch && matchesFilter;
+    });
+}
 
-// Function to render employee list
-function renderEmployees() {
+async function renderEmployees() {
     const employeeList = document.getElementById('employee-list');
     const emptyState = document.getElementById('empty-state');
     const pagination = document.getElementById('pagination');
     
-    // Always show data regardless of login status
-    emptyState.style.display = 'none';
-    
-    const filteredEmployees = filterEmployees();
-    pagination.style.display = filteredEmployees.length > 0 ? 'flex' : 'none';
-    
-    employeeList.innerHTML = '';
-    
-    if (filteredEmployees.length === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'empty-state';
-        noResults.innerHTML = `
-            <div class="empty-icon">🔎</div>
-            <div class="empty-text">No employees found. Try adjusting your filters or search term.</div>
-        `;
-        employeeList.appendChild(noResults);
-        return;
-    }
-    
-    filteredEmployees.forEach(employee => {
-        const card = document.createElement('div');
-        card.className = 'employee-card';
-        card.innerHTML = `
-            <div class="employee-avatar">${getInitials(employee.name)}</div>
-            <div class="employee-info">
-                <div class="employee-name">${employee.name}</div>
-                <div class="employee-position">${employee.position}</div>
-                <div class="employee-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">📧</span>
-                        <span class="detail-value">${employee.email}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">📱</span>
-                        <span class="detail-value">${employee.phone}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">📍</span>
-                        <span class="detail-value">${employee.location}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">🗓</span>
-                        <span class="detail-label">Started:</span>
-                        <span class="detail-value">${employee.startDate}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">🏢</span>
-                        <span class="detail-value">${employee.department}</span>
+    // Show loading state
+    employeeList.innerHTML = '<div class="loading">Loading employees...</div>';
+    console.log("Starting to render employees");
+
+    try {
+        // Fetch employees from Supabase if we don't have them yet
+        if (employees.length === 0) {
+            console.log("No employees in cache, fetching from Supabase");
+            employees = await fetchEmployees();
+            console.log(`Fetched ${employees.length} employees`);
+        }
+        
+        // Hide empty state
+        emptyState.style.display = 'none';
+        
+        const filteredEmployees = filterEmployees();
+        console.log(`Filtered to ${filteredEmployees.length} employees`);
+        
+        pagination.style.display = filteredEmployees.length > 0 ? 'flex' : 'none';
+        
+        employeeList.innerHTML = '';
+        
+        if (filteredEmployees.length === 0) {
+            console.log("No employees match filters");
+            const noResults = document.createElement('div');
+            noResults.className = 'empty-state';
+            noResults.innerHTML = `
+                <div class="empty-icon">🔎</div>
+                <div class="empty-text">No employees found. Try adjusting your filters or search term.</div>
+            `;
+            employeeList.appendChild(noResults);
+            return;
+        }
+        
+        console.log("Creating employee cards for display");
+        filteredEmployees.forEach(employee => {
+            // Before creating card, check if employee has all needed fields
+            if (!employee.name || !employee.position || !employee.email) {
+                console.warn("Employee missing required fields:", employee);
+            }
+            
+            // Add fallbacks for potentially missing fields
+            const card = document.createElement('div');
+            card.className = 'employee-card';
+            card.innerHTML = `
+                <div class="employee-avatar">${employee.name ? getInitials(employee.name) : '??'}</div>
+                <div class="employee-info">
+                    <div class="employee-name">${employee.name || 'Unknown'}</div>
+                    <div class="employee-position">${employee.position || 'No position'}</div>
+                    <div class="employee-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">📧</span>
+                            <span class="detail-value">${employee.email || 'No email'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📱</span>
+                            <span class="detail-value">${employee.phone || 'No phone'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span class="detail-value">${employee.location || 'No location'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🗓</span>
+                            <span class="detail-label">Started:</span>
+                            <span class="detail-value">${employee.startDate || 'Unknown'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🏢</span>
+                            <span class="detail-value">${employee.department || 'No department'}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="employee-action">
-                <div class="salary">${formatSalary(employee.salary)}</div>
-                <button class="view-btn">View Profile</button>
+                <div class="employee-action">
+                    <div class="salary">${employee.salary ? formatSalary(employee.salary) : 'N/A'}</div>
+                    <button class="view-btn">View Profile</button>
+                </div>
+            `;
+            employeeList.appendChild(card);
+        });
+        console.log("Employee rendering complete");
+
+    } catch (error) {
+        console.error('Error rendering employees:', error);
+        employeeList.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <div class="error-text">Failed to load employees. Please try again later.</div>
+                <div class="error-details">Error: ${error.message}</div>
             </div>
         `;
-        employeeList.appendChild(card);
-    });
+    }
 }
-    // Function to open modal
-    function openModal(type) {
-        const modal = document.getElementById(`${type}-modal`);
-        modal.style.display = 'flex';
-    }
 
-    // Function to close modal
-    function closeModal(type) {
-        const modal = document.getElementById(`${type}-modal`);
-        modal.style.display = 'none';
-    }
 
-    // Add event listener for search
-    document.getElementById('search-input').addEventListener('input', function(e) {
-        searchTerm = e.target.value;
-        renderEmployees();
-    });
+// Function to open modal
+function openModal(type) {
+    const modal = document.getElementById(`${type}-modal`);
+    modal.style.display = 'flex';
+}
 
-    // Add event listeners for filter buttons
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Update current filter
-            currentFilter = this.textContent;
-            renderEmployees();
-        });
-    });
+// Function to close modal
+function closeModal(type) {
+    const modal = document.getElementById(`${type}-modal`);
+    modal.style.display = 'none';
+}
 
-    // Handle login form submission
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        isLoggedIn = true;
-        closeModal('login');
-        renderEmployees();
-    });
-
-    // Handle signup form submission
-    // document.getElementById('signup-form').addEventListener('submit', function(e) {
-    //     e.preventDefault();
-    //     isLoggedIn = true;
-    //     closeModal('signup');
-    //     renderEmployees();
-    // });
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(e) {
-        const loginModal = document.getElementById('login-modal');
-        const signupModal = document.getElementById('signup-modal');
-        
-        if (e.target === loginModal) {
-            closeModal('login');
-        }
-        
-        if (e.target === signupModal) {
-            closeModal('signup');
-        }
-    });
-
-    // Initial render
+// Add event listener for search
+document.getElementById('search-input').addEventListener('input', function(e) {
+    searchTerm = e.target.value;
     renderEmployees();
+});
+
+// Add event listeners for filter buttons
+const filterButtons = document.querySelectorAll('.filter-btn');
+filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Update current filter
+        currentFilter = this.textContent;
+        renderEmployees();
+    });
+});
+
+// Handle login form submission
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    isLoggedIn = true;
+    closeModal('login');
+    renderEmployees();
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+    const loginModal = document.getElementById('login-modal');
+    const signupModal = document.getElementById('signup-modal');
+    
+    if (e.target === loginModal) {
+        closeModal('login');
+    }
+    
+    if (e.target === signupModal) {
+        closeModal('signup');
+    }
+});
+
+// Initial render when DOM is loaded
+document.addEventListener('DOMContentLoaded', async () => {
+    await renderEmployees();
+});
 </script>

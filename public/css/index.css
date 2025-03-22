@@ -75,12 +75,16 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
 }
-
 .container {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-}
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  
 
 .header {
     display: flex;
@@ -156,22 +160,21 @@ body {
 }
 
 .recycler-view {
-    background-color: white;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.employee-card {
-    padding: 16px;
-    border-bottom: 1px solid var(--medium-gray);
     display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-    animation: fadeIn 0.3s ease;
-}
-
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .employee-card {
+    display: flex;
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+  }
 .employee-card:hover {
     background-color: rgba(46, 204, 113, 0.05);
 }
